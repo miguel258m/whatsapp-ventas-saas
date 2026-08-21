@@ -2,57 +2,61 @@
 
 Checklist estático de fases y días. Cada día = una corrida automática = un commit. Solo se edita este archivo si cambia el alcance de forma deliberada (no en corridas rutinarias). Ver [PROGRESS.md](./PROGRESS.md) para el estado vivo.
 
-## Fase A — Fundación
+> **Reordenado el 2026-08-21**: el diseño visual (landing, colores, login/signup) se adelantó a los primeros días porque es lo que se necesita para empezar a vender, y no depende del backend. El motor del bot y los dashboards siguen después. Los días 25-26 (corte de clientes reales) mantienen su numeración original.
+
+## Fase A — Diseño, landing y fundación
 
 - [x] **Día 1 — Repo scaffolding.** Init git, npm workspaces root, `.gitignore`, `README.md`, Express vacío (`backend`) y Vite React vacío (`frontend`) que ambos arrancan. `ROADMAP.md` y `PROGRESS.md` creados.
   Hecho cuando: `npm install` en la raíz funciona, `npm run dev` levanta ambos, primer commit hecho.
-- [ ] **Día 2 — Postgres schema v1.** Agregar Prisma, escribir `schema.prisma` (tenants, users, plans, subscriptions, catalog_items, orders, messages, whatsapp_sessions, reservations, metrics_events), primera migración, script de seed con un tenant + un usuario dueño falsos. Postgres local vía Docker para desarrollo.
+- [ ] **Día 2 — Sistema de diseño + landing pública.** Definir paleta de colores, tipografía y componentes base (botones, cards, inputs, badges) con Tailwind CSS. Construir la landing pública (`/`) usando ese sistema: propuesta de valor, planes de precio (~$95-250/mes según el plan de negocio existente), CTA de registro. Sin backend real todavía — solo frontend.
+  Hecho cuando: la landing carga en `/` con el sistema de diseño aplicado, es accesible sin login, y el CTA es visible.
+- [ ] **Día 3 — Pantallas de Login y Signup (diseño).** Construir `/login` y `/signup` con el mismo sistema de diseño: formularios estilizados, validación básica en el cliente, estados de carga/error. Todavía sin conexión real a backend (estado local/mock).
+  Hecho cuando: ambas pantallas son navegables, responden a validación básica en el cliente, y siguen visualmente el sistema de diseño del Día 2.
+- [ ] **Día 4 — Postgres schema v1.** Agregar Prisma, escribir `schema.prisma` (tenants, users, plans, subscriptions, catalog_items, orders, messages, whatsapp_sessions, reservations, metrics_events), primera migración, script de seed con un tenant + un usuario dueño falsos. Postgres local vía Docker para desarrollo.
   Hecho cuando: `npx prisma migrate dev` funciona localmente, el seed puebla una DB local funcional.
-- [ ] **Día 3 — Auth backend.** Hash de contraseñas (bcrypt), emisión de JWT, `/api/login`, `/api/me`, middleware de rol (`owner_admin`/`tenant_admin`/`tenant_staff`), middleware de tenant-scoping que inyecta `req.tenantId` desde el JWT.
+- [ ] **Día 5 — Auth backend.** Hash de contraseñas (bcrypt), emisión de JWT, `/api/login`, `/api/me`, middleware de rol (`owner_admin`/`tenant_admin`/`tenant_staff`), middleware de tenant-scoping que inyecta `req.tenantId` desde el JWT.
   Hecho cuando: el usuario dueño sembrado puede loguearse vía `POST /api/login`, una ruta protegida rechaza peticiones sin token válido.
-- [ ] **Día 4 — Frontend auth shell.** React Router, página de login conectada al backend, contexto de auth/almacenamiento de token, wrapper de ruta protegida, nav mínima que distingue vista dueño vs tenant.
-  Hecho cuando: loguearse como el dueño sembrado en el navegador lleva a un dashboard vacío.
+- [ ] **Día 6 — Conectar Login/Signup reales al backend.** Reemplazar el mock del Día 3: `/login` llama a `/api/login` real y guarda el token; `/signup` crea un tenant `trial` + usuario `tenant_admin` real en la DB y notifica al dueño (berdugo1232@gmail.com).
+  Hecho cuando: loguearse con el usuario dueño sembrado en el navegador lleva a un dashboard vacío; enviar el formulario de signup crea una fila real en `tenants` con status `trial` (verificable por query directa a la DB — verlo en el dashboard del dueño llega en el Día 15).
 
 ## Fase B — Motor multi-tenant del bot
 
-- [ ] **Día 5 — Extraer helpers puros del motor.** Portar `calcularTotalCarrito`, `formatearCarrito`, `matchPlato`, `normalizar`, `formatearResumenConTotal`, `calcularEstadoPedido` desde `Instalador-LimaCriolla/bot.js` a `backend/src/engine/`, parametrizados por el catálogo del tenant. Tests unitarios con el `catalogo.json` real de Lima Criolla como fixture.
+- [ ] **Día 7 — Extraer helpers puros del motor.** Portar `calcularTotalCarrito`, `formatearCarrito`, `matchPlato`, `normalizar`, `formatearResumenConTotal`, `calcularEstadoPedido` desde `Instalador-LimaCriolla/bot.js` a `backend/src/engine/`, parametrizados por el catálogo del tenant. Tests unitarios con el `catalogo.json` real de Lima Criolla como fixture.
   Hecho cuando: los tests de total de carrito y match de platos pasan contra los datos reales.
-- [ ] **Día 6 — Portar el constructor de prompt.** `promptBuilder.js` tenant-aware que reproduce `construirPrompt()`/`formatearCatalogoPrompt()`, recibiendo `{catalog, businessInfoMd, settings}`, preservando el contrato exacto de tags (`[AGREGAR]`/`[QUITAR]`/`[PEDIDO_LISTO]`/etc).
+- [ ] **Día 8 — Portar el constructor de prompt.** `promptBuilder.js` tenant-aware que reproduce `construirPrompt()`/`formatearCatalogoPrompt()`, recibiendo `{catalog, businessInfoMd, settings}`, preservando el contrato exacto de tags (`[AGREGAR]`/`[QUITAR]`/`[PEDIDO_LISTO]`/etc).
   Hecho cuando: el prompt generado para el fixture de Lima Criolla coincide con un snapshot esperado.
-- [ ] **Día 7 — Portar el motor de pedidos.** `orderEngine.processMessage(tenantId, chatId, text)` tenant-aware, llamando a la API de Anthropic, parseando tags, aplicando las reglas de disponibilidad por día/hora **en código**, actualizando el carrito, persistiendo en Postgres (`orders`/`messages`) en vez de archivos JSON.
+- [ ] **Día 9 — Portar el motor de pedidos.** `orderEngine.processMessage(tenantId, chatId, text)` tenant-aware, llamando a la API de Anthropic, parseando tags, aplicando las reglas de disponibilidad por día/hora **en código**, actualizando el carrito, persistiendo en Postgres (`orders`/`messages`) en vez de archivos JSON.
   Hecho cuando: una conversación de prueba scripted contra el fixture produce un total y pedido final que coincide con un resultado verificado a mano.
-- [ ] **Día 8 — Portar debounce/anti-baneo.** Equivalentes tenant+chat-keyed de `encolarMensaje`/`procesarBuffer`/`conColaGlobal`.
+- [ ] **Día 10 — Portar debounce/anti-baneo.** Equivalentes tenant+chat-keyed de `encolarMensaje`/`procesarBuffer`/`conColaGlobal`.
   Hecho cuando: un test con fake timers muestra que mensajes rápidos dentro de `DEBOUNCE_MS` colapsan en una sola llamada al motor.
-- [ ] **Día 9 — Esqueleto del gestor de sesiones WhatsApp.** `sessionManager.js` que hace fork/stop de un proceso hijo por tenant; el hijo crea un `Client` de `whatsapp-web.js` con `LocalAuth({dataPath: data/tenants/<id>/.wwebjs_auth})`, emite `qr`/`ready`/`disconnected` vía IPC.
+- [ ] **Día 11 — Esqueleto del gestor de sesiones WhatsApp.** `sessionManager.js` que hace fork/stop de un proceso hijo por tenant; el hijo crea un `Client` de `whatsapp-web.js` con `LocalAuth({dataPath: data/tenants/<id>/.wwebjs_auth})`, emite `qr`/`ready`/`disconnected` vía IPC.
   Hecho cuando: arrancar un worker para un tenant semilla muestra un QR real y escanearlo con un número de WhatsApp de prueba llega a estado `connected` en la DB.
-- [ ] **Día 10 — Conectar worker al motor.** El handler de `message` del worker llama a `orderEngine.processMessage` y envía la respuesta de vuelta por `whatsapp-web.js`.
+- [ ] **Día 12 — Conectar worker al motor.** El handler de `message` del worker llama a `orderEngine.processMessage` y envía la respuesta de vuelta por `whatsapp-web.js`.
   Hecho cuando: un mensaje real de WhatsApp a la sesión de prueba produce una respuesta correcta de la IA y crea una fila en `orders`.
-- [ ] **Día 11 — Recuperación ante crash + re-conexión al arrancar.** Al iniciar el backend, relanzar un worker por cada tenant con `status=active`, reutilizando su carpeta de auth guardada; reinicio automático con backoff si un worker muere inesperadamente.
+- [ ] **Día 13 — Recuperación ante crash + re-conexión al arrancar.** Al iniciar el backend, relanzar un worker por cada tenant con `status=active`, reutilizando su carpeta de auth guardada; reinicio automático con backoff si un worker muere inesperadamente.
   Hecho cuando: matar un worker a mitad de sesión reinicia y reconecta automáticamente sin escanear un QR nuevo.
-- [ ] **Día 12 — Notas de voz + import de catálogo por PDF** (menor prioridad, puede deslizarse sin bloquear días siguientes). Portar `transcribirAudio`/`generarNotaDeVoz`/`leerCatalogoDesdePDF` como funciones tenant-aware.
+- [ ] **Día 14 — Notas de voz + import de catálogo por PDF** (menor prioridad, puede deslizarse sin bloquear días siguientes). Portar `transcribirAudio`/`generarNotaDeVoz`/`leerCatalogoDesdePDF` como funciones tenant-aware.
   Hecho cuando: una nota de voz de prueba se transcribe y responde; un PDF de prueba puebla `catalog_items`.
 
 ## Fase C — Dashboards
 
-- [ ] **Día 13 — Dashboard dueño: lista de tenants + crear tenant.** Tabla cross-tenant (nombre/estado/conectado/plan/creado), formulario crear-tenant (crea `tenants` + primer `tenant_admin`).
-  Hecho cuando: el dueño puede crear un tenant desde la UI y verlo listado con estado de conexión en vivo.
-- [ ] **Día 14 — Shell del dashboard por tenant.** Nav (Pedidos/Catálogo/Conversaciones/Config/WhatsApp), todas las llamadas con tenant-scoping del Día 3, estados vacíos por sección.
+- [ ] **Día 15 — Dashboard dueño: lista de tenants + crear tenant.** Tabla cross-tenant (nombre/estado/conectado/plan/creado), formulario crear-tenant (crea `tenants` + primer `tenant_admin`). Aquí se ve por primera vez en UI el tenant trial creado el Día 6.
+  Hecho cuando: el dueño puede crear un tenant desde la UI y verlo listado con estado de conexión en vivo, y el tenant trial del Día 6 aparece en la lista.
+- [ ] **Día 16 — Shell del dashboard por tenant.** Nav (Pedidos/Catálogo/Conversaciones/Config/WhatsApp), todas las llamadas con tenant-scoping del Día 5, estados vacíos por sección.
   Hecho cuando: una llamada cross-tenant como `tenant_admin` devuelve 403.
-- [ ] **Día 15 — Kanban de pedidos.** Portar el tablero de 5 columnas (Armando pedido → Por pagar → Comprobante enviado → Pagados → Cancelados) como componente React sobre `/api/tenant/orders`, actualización en vivo vía el hub de tiempo real.
+- [ ] **Día 17 — Kanban de pedidos.** Portar el tablero de 5 columnas (Armando pedido → Por pagar → Comprobante enviado → Pagados → Cancelados) como componente React sobre `/api/tenant/orders`, actualización en vivo vía el hub de tiempo real.
   Hecho cuando: un pedido simulado de WhatsApp aparece en la columna correcta en segundos sin refrescar manualmente.
-- [ ] **Día 16 — Editor de catálogo.** CRUD de `catalog_items` (nombre/categoría/precio/variantes/disponibilidad día-hora/activo), trigger de import por PDF.
+- [ ] **Día 18 — Editor de catálogo.** CRUD de `catalog_items` (nombre/categoría/precio/variantes/disponibilidad día-hora/activo), trigger de import por PDF.
   Hecho cuando: editar un precio en la UI cambia lo que cotiza el bot en el siguiente mensaje de prueba.
-- [ ] **Día 17 — Pantalla de conexión WhatsApp + toggle IA/humano.** QR, estado de conexión, controles reconectar/desconectar, toggle global y por conversación, visor de conversaciones.
+- [ ] **Día 19 — Pantalla de conexión WhatsApp + toggle IA/humano.** QR, estado de conexión, controles reconectar/desconectar, toggle global y por conversación, visor de conversaciones.
   Hecho cuando: un tenant nuevo pasa de "sin sesión" a "conectado, escaneado, viendo mensajes en vivo" completamente desde el dashboard.
-- [ ] **Día 18 — Reservas, promociones, config de negocio.** Portar lista de `reservas` (marcar atendida), editor de promociones, editor de info de negocio en DB reemplazando `empresa.md`.
+- [ ] **Día 20 — Reservas, promociones, config de negocio.** Portar lista de `reservas` (marcar atendida), editor de promociones, editor de info de negocio en DB reemplazando `empresa.md`.
   Hecho cuando: editar info de negocio en la UI cambia el system prompt vivo en el siguiente mensaje.
 
-## Fase D — Landing/signup + billing stub
+> **🎬 Hito: listo para grabar el video promocional.** Al terminar el Día 20, la plataforma corre localmente de punta a punta: landing con diseño, login/signup reales, un tenant de prueba recibiendo pedidos reales por WhatsApp, dashboard con Kanban de pedidos, catálogo, conexión WhatsApp y reservas/promos. No hace falta esperar al deploy en la nube (Fase E) para grabar — eso llega después, para vender de verdad con clientes reales.
 
-- [ ] **Día 19 — Landing pública.** Ruta `/` sin login: propuesta de valor, tiers de precio (~$95-250/mes), CTA de signup clara.
-  Hecho cuando: accesible sin login, CTA visible.
-- [ ] **Día 20 — Flujo de signup.** Formulario público (nombre de negocio, contacto, número WhatsApp, interés de plan) crea un tenant `trial` + usuario `tenant_admin`, notifica al dueño.
-  Hecho cuando: enviar el formulario crea un tenant trial real visible en el dashboard del dueño.
+## Fase D — Billing
+
 - [ ] **Día 21 — Billing stub.** Sembrar tiers de plan reales; `subscriptions.status` alternado manualmente por el dueño desde el dashboard; un tenant `past_due`/`canceled` pausa automáticamente su worker (deja de responder clientes, sin pasarela de pago real todavía).
   Hecho cuando: poner un tenant en `canceled` pausa su worker sin afectar a otros.
 

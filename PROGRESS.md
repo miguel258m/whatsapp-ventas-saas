@@ -27,6 +27,6 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 ### Día 1 — 2026-08-20 — Repo scaffolding
 
 - Implementado: repo git inicializado (rama `main`) en `Desktop/whatsapp-ventas-saas`, npm workspaces root (`backend`, `frontend`), `.gitignore`, `README.md`, Express mínimo con `/api/health`, Vite + React mínimo con página placeholder. `ROADMAP.md` y `PROGRESS.md` creados con el plan completo de 27 días.
-- Commit: (pendiente, se agrega en este mismo commit inicial)
-- Tests: N/A (aún no hay tests; se agregan desde el Día 5)
-- Notas para la próxima corrida: Día 2 necesita Postgres local (Docker) para `prisma migrate dev` — si Docker no está disponible en el entorno de la corrida programada, marcar bloqueado y avisar en vez de improvisar otra DB.
+- Commit: d09be28
+- Tests: N/A (aún no hay tests; se agregan desde el Día 7)
+- Notas para la próxima corrida: no confundir con una versión anterior de este archivo — el roadmap se reordenó el 2026-08-21 (ver nota al inicio de ROADMAP.md). El Día 2 real ahora es **sistema de diseño + landing pública** (Tailwind, paleta de colores, componentes base), no schema de base de datos. El schema de Postgres (que necesita Docker local) pasó al Día 4.
