@@ -32,7 +32,7 @@ Usamos `whatsapp-web.js` (conexión no oficial), así que el riesgo de que Whats
   Hecho cuando: `npm install` en la raíz funciona, `npm run dev` levanta ambos, primer commit hecho.
 - [x] **Día 2 — Sistema de diseño + landing pública.** Definir paleta de colores, tipografía y componentes base (botones, cards, inputs, badges) con Tailwind CSS. Construir la landing pública (`/`) usando ese sistema: propuesta de valor, planes de precio (~$95-250/mes según el plan de negocio existente), CTA de registro. Sin backend real todavía — solo frontend.
   Hecho cuando: la landing carga en `/` con el sistema de diseño aplicado, es accesible sin login, y el CTA es visible.
-- [ ] **Día 3 — Pantallas de Login y Signup (diseño).** Construir `/login` y `/signup` con el mismo sistema de diseño: formularios estilizados, validación básica en el cliente, estados de carga/error. Todavía sin conexión real a backend (estado local/mock).
+- [x] **Día 3 — Pantallas de Login y Signup (diseño).** Construir `/login` y `/signup` con el mismo sistema de diseño: formularios estilizados, validación básica en el cliente, estados de carga/error. Todavía sin conexión real a backend (estado local/mock).
   Hecho cuando: ambas pantallas son navegables, responden a validación básica en el cliente, y siguen visualmente el sistema de diseño del Día 2.
 - [ ] **Día 4 — Postgres schema v1.** Agregar Prisma, escribir `schema.prisma` (tenants, users, plans, subscriptions, catalog_items, orders, messages, whatsapp_sessions, reservations, metrics_events), primera migración, script de seed con un tenant + un usuario dueño falsos. Postgres local vía Docker para desarrollo.
   Hecho cuando: `npx prisma migrate dev` funciona localmente, el seed puebla una DB local funcional.

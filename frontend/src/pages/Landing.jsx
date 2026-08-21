@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import Button from "../components/ui/Button.jsx";
 import Card from "../components/ui/Card.jsx";
 import Badge from "../components/ui/Badge.jsx";
@@ -49,10 +50,10 @@ export default function Landing() {
           WhatsApp<span className="text-brand-500">Ventas</span>
         </span>
         <nav className="flex items-center gap-3">
-          <Button as="a" href="/login" variant="ghost" size="sm">
+          <Button as={Link} to="/login" variant="ghost" size="sm">
             Iniciar sesión
           </Button>
-          <Button as="a" href="/signup" variant="primary" size="sm">
+          <Button as={Link} to="/signup" variant="primary" size="sm">
             Crear cuenta
           </Button>
         </nav>
@@ -70,7 +71,7 @@ export default function Landing() {
             dashboard donde ves cada conversación y cada venta en vivo.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button as="a" href="/signup" size="lg">
+            <Button as={Link} to="/signup" size="lg">
               Empezar ahora
             </Button>
             <Button as="a" href="#planes" variant="outline" size="lg">
@@ -118,8 +119,8 @@ export default function Landing() {
                   ))}
                 </ul>
                 <Button
-                  as="a"
-                  href="/signup"
+                  as={Link}
+                  to="/signup"
                   variant={plan.highlighted ? "primary" : "outline"}
                   className="mt-8 w-full"
                 >
@@ -135,7 +136,7 @@ export default function Landing() {
             <h2 className="text-2xl font-bold text-ink-900">
               ¿Listo para automatizar tus ventas por WhatsApp?
             </h2>
-            <Button as="a" href="/signup" size="lg">
+            <Button as={Link} to="/signup" size="lg">
               Crear cuenta gratis
             </Button>
           </div>

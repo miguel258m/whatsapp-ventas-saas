@@ -18,8 +18,8 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 
 ## Estado actual
 
-- Último día completado: 2
-- Próximo día a correr: 3
+- Último día completado: 3
+- Próximo día a correr: 4
 - Bloqueado: no
 - Razón de bloqueo: —
 - Esperando aprobación humana: no
@@ -30,6 +30,14 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 - **Fly.io**: la app `whatsapp-ventas-saas` ya existe (org `personal`, cuenta berdugo1232@gmail.com), creada el 2026-08-21 antes de llegar al Día 22, para que ese día no se bloquee por falta de cuenta. Todavía NO tiene volumen ni secrets configurados — eso lo hace el propio Día 22 cuando arme el Dockerfile y decida la región/tamaño.
 
 ## Log
+
+### Día 3 — 2026-08-21 — Pantallas de Login y Signup (diseño)
+
+- Nota de mantenimiento antes de empezar: la corrida anterior (Día 2) había commiteado en un HEAD detached que nunca llegó a `main` ni a `origin/main` (quedó como commit huérfano `022c82b`). `PROGRESS.md` decía "Último día completado: 2" pero el código real seguía en el Día 1 en el branch remoto. Esta corrida hizo `git checkout main && git merge --ff-only 022c82b && git push` antes de tocar nada del Día 3, para que el historial de `main` coincida con lo que dice este archivo. Corridas futuras: verificar `git status`/`git branch -vv` al inicio, no asumir que se está sobre `main`.
+- Implementado: agregado `react-router-dom` al workspace `frontend` (se decidió agregar router real ahora en vez de navegación simple, ya que vienen más pantallas — dashboard dueño, dashboard tenant — en los próximos días). `main.jsx` envuelve `App` en `BrowserRouter`; `App.jsx` define rutas `/`, `/login`, `/signup`. `Landing.jsx` actualizado para usar `<Link>` de router en vez de `<a href>` planos para los CTAs internos (se mantiene `<a href="#planes">` para el anchor interno). Nuevas páginas `frontend/src/pages/Login.jsx` y `frontend/src/pages/Signup.jsx` con el sistema de diseño del Día 2 (`Card`, `Input`, `Button`): validación básica en cliente (email con formato válido, password ≥6 caracteres, confirmación de password coincide en signup, nombre de negocio requerido en signup) con mensajes de error por campo; estado de carga (botón deshabilitado + texto "Ingresando…"/"Creando cuenta…" durante un submit simulado); estado post-submit mostrando que la conexión real al backend llega en el Día 6 (todavía sin fetch real, estado 100% local).
+- Commit: este mismo commit (`feat(day-03): ...`, ver `git log` — el hash no se referencia literalmente para evitar el problema de auto-referencia de incluir el propio hash del commit dentro de su contenido)
+- Tests: no hay suite de tests todavía (arranca en el Día 7). Verificado: `npm run build --workspace=frontend` compila sin errores. Verificación funcional con Playwright headless (binario global en `/opt/pw-browsers/chromium`, sin agregarlo como dependencia del proyecto, siguiendo la nota dejada en el Día 2) contra `vite preview`: `/`, `/login` y `/signup` cargan con el contenido esperado; clic en "Iniciar sesión" desde la landing navega a `/login` sin recarga completa de página (routing client-side real); submit vacío en `/login` muestra el error de validación "Ingresa tu email."; submit con datos válidos pasa por el estado de carga y llega al estado post-submit "Datos válidos...".
+- Notas para la próxima corrida: el Día 4 (Postgres schema v1) es el primer día que necesita una DB — usar el `DATABASE_URL` de Neon ya provisto en las instrucciones de la rutina, escribirlo en `backend/.env` (gitignored, no crear commit con el valor). `npm audit` en frontend ahora reporta 1 alta + 1 moderada en `vite`/`esbuild` (sin cambios respecto al Día 2, ver nota de esa entrada) — sigue pendiente de revisar antes del Día 22, no antes.
 
 ### Día 2 — 2026-08-21 — Sistema de diseño + landing pública
 
