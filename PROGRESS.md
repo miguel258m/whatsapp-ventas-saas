@@ -20,8 +20,8 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 
 - Último día completado: 3
 - Próximo día a correr: 4
-- Bloqueado: no
-- Razón de bloqueo: —
+- Bloqueado: sí
+- Razón de bloqueo: el entorno de esta corrida (sandbox de red) no puede alcanzar el host de Neon (`ep-summer-scene-ax8kajnz.c-4.us-east-2.aws.neon.tech`) ni por el puerto 5432 (protocolo Postgres) ni por 443 (HTTPS) — el proxy de salida devuelve `403` explícito de política ("gateway answered 403 to CONNECT (policy denial or upstream failure)") para ambos, no un timeout genérico. Ver detalle en el Log del Día 4. Se necesita que el dueño del proyecto habilite `neon.tech`/el host específico en la política de red del entorno de las corridas programadas, o indique una forma alternativa de correr `prisma migrate dev`/el seed contra esa DB (ej. desde un entorno con acceso, o un connection string que sí sea alcanzable desde este sandbox).
 - Esperando aprobación humana: no
 
 ## Infraestructura ya provisionada (fuera del flujo día a día)
@@ -30,6 +30,16 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 - **Fly.io**: la app `whatsapp-ventas-saas` ya existe (org `personal`, cuenta berdugo1232@gmail.com), creada el 2026-08-21 antes de llegar al Día 22, para que ese día no se bloquee por falta de cuenta. Todavía NO tiene volumen ni secrets configurados — eso lo hace el propio Día 22 cuando arme el Dockerfile y decida la región/tamaño.
 
 ## Log
+
+### Día 4 (bloqueado) — 2026-08-21 — Postgres schema v1
+
+- Preparado (sin verificar contra DB real): `prisma` + `@prisma/client` agregados al workspace `backend`. Nota de versión: la última estable (`7.9.1`, instalada primero) rompe con este schema porque Prisma 7 eliminó `datasource.url` del schema file a favor de `prisma.config.ts` + un `adapter` explícito en el `PrismaClient` — un cambio de API considerablemente más grande que el alcance de este día. Se optó por fijar `prisma`/`@prisma/client` en `6.19.3` (última estable de la serie 6, que sigue soportando `datasource { url = env("DATABASE_URL") }` clásico), en vez de adoptar el patrón de adapters de Prisma 7 sin poder siquiera probarlo contra una DB real. Revisar si vale la pena migrar a Prisma 7 más adelante, cuando haya acceso de red para probarlo de punta a punta.
+- `backend/prisma/schema.prisma` escrito con los 9 modelos del alcance del día (`Tenant`, `User`, `Plan`, `Subscription`, `CatalogItem`, `Order`, `Message`, `WhatsappSession`, `Reservation`, `MetricsEvent`), enums para status/roles, y `tenantId` indexado en cada modelo tenant-scoped (preparando el middleware de tenant-scoping del Día 5). `npx prisma generate` corre limpio (no necesita conexión a la DB, solo valida el schema).
+- `backend/.env` (gitignored, no committeado) escrito con el `DATABASE_URL` de Neon provisto en las instrucciones de la rutina y un `JWT_SECRET` placeholder para el Día 5.
+- **Bloqueador real**: `npx prisma migrate dev` falla con `P1001: Can't reach database server at ep-summer-scene-ax8kajnz.c-4.us-east-2.aws.neon.tech:5432`. Se investigó si era un problema de proxy HTTP (el entorno de esta corrida sale a internet vía un proxy HTTPS en `127.0.0.1:35481`, ver `/root/.ccr/README.md`) — pero el protocolo Postgres no es HTTP y no pasa por ese proxy. Se probó también acceso directo por HTTPS (puerto 443) al mismo host y a `console.neon.tech`, y ambos devuelven `403` explícito de política del gateway de salida (`curl: (56) CONNECT tunnel failed, response 403`, confirmado en `/__agentproxy/status` → `recentRelayFailures`). Es decir: no es un problema de protocolo/puerto, es que la política de red de este entorno bloquea el host de Neon por completo. Siguiendo la regla del proxy de no reintentar ni rodear denegaciones de política 403, no se intentó ningún workaround (túnel SSH, etc.) — se marca `Bloqueado` en su lugar.
+- Tests: no aplica (no hay tests de backend nuevos este día; el criterio "hecho cuando" del Día 4 —`npx prisma migrate dev` funciona y el seed puebla una DB— no se pudo verificar por el bloqueador de red descrito arriba).
+- Commit: este mismo commit (no es `feat(day-04)` porque el día no está completo — no se marcó el ítem en `ROADMAP.md` ni se avanzó "Último día completado"/"Próximo día a correr").
+- Notas para la próxima corrida: si la política de red ya permite alcanzar `neon.tech` (puerto 5432 y/o 443), correr `cd backend && npx prisma migrate dev --name init` y luego escribir+correr el script de seed (tenant + usuario dueño falsos) que todavía falta — el schema ya está listo, solo falta la migración y el seed. Si sigue bloqueado, no repetir la investigación de red desde cero: ya se confirmó que es una denegación de política 403 explícita, no un timeout ambiguo.
 
 ### Día 3 — 2026-08-21 — Pantallas de Login y Signup (diseño)
 

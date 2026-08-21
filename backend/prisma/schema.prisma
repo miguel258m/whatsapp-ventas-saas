@@ -1,0 +1,210 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TenantStatus {
+  trial
+  active
+  past_due
+  canceled
+}
+
+enum UserRole {
+  owner_admin
+  tenant_admin
+  tenant_staff
+}
+
+enum SubscriptionStatus {
+  active
+  trialing
+  past_due
+  canceled
+}
+
+enum WhatsappSessionStatus {
+  disconnected
+  connecting
+  qr_pending
+  connected
+  error
+}
+
+enum OrderStatus {
+  armando_pedido
+  por_pagar
+  comprobante_enviado
+  pagado
+  cancelado
+}
+
+enum MessageDirection {
+  inbound
+  outbound
+}
+
+enum ReservationStatus {
+  pendiente
+  atendida
+  cancelada
+}
+
+model Tenant {
+  id        String       @id @default(uuid())
+  name      String
+  status    TenantStatus @default(trial)
+  settings  Json         @default("{}")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  users           User[]
+  subscriptions   Subscription[]
+  catalogItems    CatalogItem[]
+  orders          Order[]
+  messages        Message[]
+  whatsappSession WhatsappSession?
+  reservations    Reservation[]
+  metricsEvents   MetricsEvent[]
+
+  @@map("tenants")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  tenantId     String?
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("users")
+}
+
+model Plan {
+  id         String   @id @default(uuid())
+  key        String   @unique
+  name       String
+  priceCents Int
+  features   Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id               String             @id @default(uuid())
+  tenantId         String
+  tenant           Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  planId           String
+  plan             Plan               @relation(fields: [planId], references: [id])
+  status           SubscriptionStatus @default(trialing)
+  currentPeriodEnd DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([tenantId])
+  @@map("subscriptions")
+}
+
+model CatalogItem {
+  id           String   @id @default(uuid())
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name         String
+  category     String?
+  priceCents   Int
+  variants     Json     @default("[]")
+  availability Json     @default("{}")
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("catalog_items")
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  tenantId        String
+  tenant          Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  chatId          String
+  customerName    String?
+  customerPhone   String?
+  items           Json        @default("[]")
+  totalCents      Int         @default(0)
+  status          OrderStatus @default(armando_pedido)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("orders")
+}
+
+model Message {
+  id        String            @id @default(uuid())
+  tenantId  String
+  tenant    Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  chatId    String
+  direction MessageDirection
+  body      String
+  createdAt DateTime          @default(now())
+
+  @@index([tenantId])
+  @@index([tenantId, chatId])
+  @@map("messages")
+}
+
+model WhatsappSession {
+  id            String                 @id @default(uuid())
+  tenantId      String                 @unique
+  tenant        Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  status        WhatsappSessionStatus  @default(disconnected)
+  phoneNumber   String?
+  connectedAt   DateTime?
+  lastSeenAt    DateTime?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  @@map("whatsapp_sessions")
+}
+
+model Reservation {
+  id           String             @id @default(uuid())
+  tenantId     String
+  tenant       Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customerName String
+  phone        String?
+  date         DateTime
+  partySize    Int                @default(1)
+  status       ReservationStatus  @default(pendiente)
+  notes        String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([tenantId])
+  @@map("reservations")
+}
+
+model MetricsEvent {
+  id        String   @id @default(uuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  type      String
+  payload   Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([tenantId, type])
+  @@map("metrics_events")
+}
