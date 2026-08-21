@@ -22,6 +22,11 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 - Razón de bloqueo: —
 - Esperando aprobación humana: no
 
+## Infraestructura ya provisionada (fuera del flujo día a día)
+
+- **Neon Postgres**: hay un connection string de desarrollo cargado directamente en las instrucciones de la rutina programada (no en este repo). El Día 4 debe escribirlo en `backend/.env` (gitignored). Es una DB compartida de desarrollo — nunca poner datos reales de clientes ahí.
+- **Fly.io**: la app `whatsapp-ventas-saas` ya existe (org `personal`, cuenta berdugo1232@gmail.com), creada el 2026-08-21 antes de llegar al Día 22, para que ese día no se bloquee por falta de cuenta. Todavía NO tiene volumen ni secrets configurados — eso lo hace el propio Día 22 cuando arme el Dockerfile y decida la región/tamaño.
+
 ## Log
 
 ### Día 1 — 2026-08-20 — Repo scaffolding
