@@ -1,15 +1,20 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
+// Password de prueba conocido, solo para la DB de desarrollo compartida — nunca usar en producción.
+const SEED_OWNER_PASSWORD = "cambiar-en-produccion";
+
 async function main() {
+  const passwordHash = await bcrypt.hash(SEED_OWNER_PASSWORD, 10);
+
   const owner = await prisma.user.upsert({
     where: { email: "dueno@whatsapp-ventas-saas.test" },
-    update: {},
+    update: { passwordHash },
     create: {
       email: "dueno@whatsapp-ventas-saas.test",
-      // Placeholder: el Día 5 agrega bcrypt y reemplaza esto por un hash real.
-      passwordHash: "PENDIENTE_DIA_5_BCRYPT",
+      passwordHash,
       role: "owner_admin",
       tenantId: null,
     },
