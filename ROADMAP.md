@@ -4,6 +4,15 @@ Checklist estático de fases y días. Cada día = una corrida automática = un c
 
 > **Reordenado el 2026-08-21**: el diseño visual (landing, colores, login/signup) se adelantó a los primeros días porque es lo que se necesita para empezar a vender, y no depende del backend. El motor del bot y los dashboards siguen después. Los días 25-26 (corte de clientes reales) mantienen su numeración original.
 
+## ⚠️ Restricción no negociable: anti-baneo de WhatsApp
+
+Usamos `whatsapp-web.js` (conexión no oficial), así que el riesgo de que WhatsApp banee el número de un cliente es real y su costo es alto (cliente real sin servicio). Esto **no es una feature más, es un requisito duro** en todos los días que toquen el motor de mensajería:
+
+- **Día 10** debe portar el debounce/pacing del `bot.js` actual (`encolarMensaje`/`procesarBuffer`/`conColaGlobal`) con paridad completa, nunca una versión simplificada "para salir del paso". Si el test de fake timers no confirma el comportamiento exacto, el día se marca `Bloqueado`, no se hace un shortcut.
+- **Día 11/13** (sessionManager y recuperación ante crash) deben garantizar que **nunca haya dos procesos/sesiones activos para el mismo número de WhatsApp a la vez** (ej. un worker viejo que no murió bien + uno nuevo re-lanzado) — eso es una causa común de baneo.
+- Ningún día de Fase E puede reconectar o relanzar una sesión de forma agresiva (reintentos sin backoff, reconexiones en loop) — ya está cubierto por el backoff exponencial del Día 13, pero es un criterio a verificar explícitamente antes del corte de clientes reales (Días 25-26).
+- Si alguna corrida automática necesita simplificar o posponer algo de esta lista por falta de tiempo, debe marcar `Bloqueado: sí` con la razón — nunca avanzar con una versión debilitada de las protecciones anti-baneo.
+
 ## Fase A — Diseño, landing y fundación
 
 - [x] **Día 1 — Repo scaffolding.** Init git, npm workspaces root, `.gitignore`, `README.md`, Express vacío (`backend`) y Vite React vacío (`frontend`) que ambos arrancan. `ROADMAP.md` y `PROGRESS.md` creados.
