@@ -14,6 +14,8 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 
 **Regla de seguridad dura para los días 25 y 26**: la corrida automática nunca ejecuta el corte de un cliente real (Lima Criolla, CITED) en vivo por sí sola. Prepara todo y deja `Esperando aprobación humana: sí`, luego se detiene. El corte real solo avanza cuando el usuario lo aprueba explícitamente en una conversación.
 
+**Ritmo temporal acelerado (2026-08-21 → 2026-08-31)**: mientras dura una promoción de límites de uso, la rutina corre cada 4 horas (~6 veces/día) en vez de 1 vez/día, para aprovechar la capacidad extra. Sigue siendo **un ítem de roadmap por corrida**, sin excepciones — la aceleración es solo en frecuencia, no en cuánto abarca cada corrida. Después del 31 de agosto (o al terminar el roadmap, lo que pase primero) debe volver a 1 vez/día (`0 14 * * *`, 9am hora Lima).
+
 ## Estado actual
 
 - Último día completado: 1
