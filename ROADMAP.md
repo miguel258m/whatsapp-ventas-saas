@@ -4,6 +4,19 @@ Checklist estático de fases y días. Cada día = una corrida automática = un c
 
 > **Reordenado el 2026-08-21**: el diseño visual (landing, colores, login/signup) se adelantó a los primeros días porque es lo que se necesita para empezar a vender, y no depende del backend. El motor del bot y los dashboards siguen después. Los días 25-26 (corte de clientes reales) mantienen su numeración original.
 
+## 🔒 Restricción no negociable: seguridad
+
+Esto maneja datos de negocio de varios clientes reales (catálogos, pedidos, números de contacto). Estas reglas aplican a **todo** día que toque backend, auth o infraestructura, no son opcionales:
+
+- **Aislamiento entre tenants es lo más crítico.** Toda query a `catalog_items`, `orders`, `messages`, `reservations`, etc. debe pasar por el middleware de tenant-scoping del Día 5 (`req.tenantId` desde el JWT) — nunca un `tenantId` que venga del body/query de la petición sin validar contra el usuario autenticado. El criterio "403 en llamada cross-tenant" del Día 16 debe probarse explícitamente, no darse por sentado.
+- **Nunca commitear secretos.** API keys, connection strings, JWT secrets siempre en `.env` (gitignored) o en secrets de Fly — nunca en código, nunca en mensajes de commit, nunca en `ROADMAP.md`/`PROGRESS.md`.
+- **Passwords**: bcrypt (o argon2), nunca texto plano ni hashes propios. JWT con expiración razonable (no tokens eternos).
+- **Rate limiting** en endpoints de login/signup desde el Día 5, para evitar fuerza bruta — si no se implementa ese día por alcance, debe quedar anotado como pendiente explícito en `PROGRESS.md`, no olvidado.
+- **Validación de entrada** en toda ruta que reciba datos del cliente (Prisma ya previene SQL injection por queries parametrizadas, pero igual validar tipos/tamaños antes de tocar la DB).
+- **Antes del Día 22 (deploy real)**: correr `npm audit` en ambos workspaces y resolver vulnerabilidades altas/críticas antes de desplegar — si quedan sin resolver, documentar por qué en `PROGRESS.md`, no ignorarlas en silencio.
+- **Antes de los Días 25-26 (clientes reales)**: yo (en conversación en vivo, no la corrida automática) voy a correr una revisión de seguridad completa del código antes de aprobar el corte — la corrida automática no necesita hacer esto sola, solo debe dejar el código en un estado revisable.
+- **El repo es público hoy** por una limitación de permisos de GitHub que no logramos resolver (ver nota en README o preguntarme). No hay secretos committeados, pero antes de manejar datos reales de clientes conviene volverlo privado si encontramos cómo dar ese acceso — pendiente, no bloqueante para el desarrollo.
+
 ## ⚠️ Restricción no negociable: anti-baneo de WhatsApp
 
 Usamos `whatsapp-web.js` (conexión no oficial), así que el riesgo de que WhatsApp banee el número de un cliente es real y su costo es alto (cliente real sin servicio). Esto **no es una feature más, es un requisito duro** en todos los días que toquen el motor de mensajería:
