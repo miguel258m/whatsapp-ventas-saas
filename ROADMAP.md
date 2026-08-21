@@ -4,6 +4,8 @@ Checklist estático de fases y días. Cada día = una corrida automática = un c
 
 > **Reordenado el 2026-08-21**: el diseño visual (landing, colores, login/signup) se adelantó a los primeros días porque es lo que se necesita para empezar a vender, y no depende del backend. El motor del bot y los dashboards siguen después. Los días 25-26 (corte de clientes reales) mantienen su numeración original.
 
+> **Descubrimiento del Día 4 (2026-08-21): el sandbox de la corrida en la nube NO puede alcanzar Neon (`neon.tech`) por política de red** — un proxy de salida devuelve `403` explícito para ese host, en cualquier puerto. No es un problema de código ni de credenciales. Esto probablemente afecta a **todo día futuro que necesite una conexión real a Postgres** (5, 6, 7, 9, y varios de la Fase C). Convención para corridas futuras: si `npx prisma migrate dev`/`deploy` o cualquier query real a la DB falla con `P1001` u otro error de conexión, **no investigar la red desde cero** — ya está diagnosticado. Marcar `Bloqueado: sí` con una nota corta tipo "necesita migración/seed manual por política de red del sandbox" y detenerse; el dueño del proyecto la corre desde su máquina local (tiene acceso normal a internet) y deja el día marcado como hecho antes de la siguiente corrida.
+
 ## 🔒 Restricción no negociable: seguridad
 
 Esto maneja datos de negocio de varios clientes reales (catálogos, pedidos, números de contacto). Estas reglas aplican a **todo** día que toque backend, auth o infraestructura, no son opcionales:
@@ -34,7 +36,7 @@ Usamos `whatsapp-web.js` (conexión no oficial), así que el riesgo de que Whats
   Hecho cuando: la landing carga en `/` con el sistema de diseño aplicado, es accesible sin login, y el CTA es visible.
 - [x] **Día 3 — Pantallas de Login y Signup (diseño).** Construir `/login` y `/signup` con el mismo sistema de diseño: formularios estilizados, validación básica en el cliente, estados de carga/error. Todavía sin conexión real a backend (estado local/mock).
   Hecho cuando: ambas pantallas son navegables, responden a validación básica en el cliente, y siguen visualmente el sistema de diseño del Día 2.
-- [ ] **Día 4 — Postgres schema v1.** Agregar Prisma, escribir `schema.prisma` (tenants, users, plans, subscriptions, catalog_items, orders, messages, whatsapp_sessions, reservations, metrics_events), primera migración, script de seed con un tenant + un usuario dueño falsos. Postgres local vía Docker para desarrollo.
+- [x] **Día 4 — Postgres schema v1.** Agregar Prisma, escribir `schema.prisma` (tenants, users, plans, subscriptions, catalog_items, orders, messages, whatsapp_sessions, reservations, metrics_events), primera migración, script de seed con un tenant + un usuario dueño falsos. Postgres local vía Docker para desarrollo.
   Hecho cuando: `npx prisma migrate dev` funciona localmente, el seed puebla una DB local funcional.
 - [ ] **Día 5 — Auth backend.** Hash de contraseñas (bcrypt), emisión de JWT, `/api/login`, `/api/me`, middleware de rol (`owner_admin`/`tenant_admin`/`tenant_staff`), middleware de tenant-scoping que inyecta `req.tenantId` desde el JWT.
   Hecho cuando: el usuario dueño sembrado puede loguearse vía `POST /api/login`, una ruta protegida rechaza peticiones sin token válido.

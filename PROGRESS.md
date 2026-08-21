@@ -18,10 +18,10 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 
 ## Estado actual
 
-- Último día completado: 3
-- Próximo día a correr: 4
-- Bloqueado: sí
-- Razón de bloqueo: el entorno de esta corrida (sandbox de red) no puede alcanzar el host de Neon (`ep-summer-scene-ax8kajnz.c-4.us-east-2.aws.neon.tech`) ni por el puerto 5432 (protocolo Postgres) ni por 443 (HTTPS) — el proxy de salida devuelve `403` explícito de política ("gateway answered 403 to CONNECT (policy denial or upstream failure)") para ambos, no un timeout genérico. Ver detalle en el Log del Día 4. Se necesita que el dueño del proyecto habilite `neon.tech`/el host específico en la política de red del entorno de las corridas programadas, o indique una forma alternativa de correr `prisma migrate dev`/el seed contra esa DB (ej. desde un entorno con acceso, o un connection string que sí sea alcanzable desde este sandbox).
+- Último día completado: 4
+- Próximo día a correr: 5
+- Bloqueado: no
+- Razón de bloqueo: —
 - Esperando aprobación humana: no
 
 ## Infraestructura ya provisionada (fuera del flujo día a día)
@@ -31,7 +31,16 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 
 ## Log
 
-### Día 4 (bloqueado) — 2026-08-21 — Postgres schema v1
+### Día 4 (completado manualmente) — 2026-08-21 — Postgres schema v1
+
+- La corrida automática dejó el schema listo pero bloqueado por política de red del sandbox (ver entrada de abajo). El dueño del proyecto (con acceso normal a internet desde su máquina) completó lo que faltaba: `npx prisma migrate dev --name init` corrió y aplicó la migración `20260821195542_init` contra la Neon dev DB sin problema, `npx prisma generate` generó el cliente, y se escribió `backend/prisma/seed.js` (upsert de un tenant `trial` "Tenant de prueba" y un usuario `owner_admin` `dueno@whatsapp-ventas-saas.test` — `passwordHash` es un placeholder de texto, no un hash real, hasta que el Día 5 agregue bcrypt) — `npm run seed` corrió con éxito.
+- Se agregó una nota permanente al inicio de `ROADMAP.md` explicando el bloqueo de red por si se repite en días futuros que toquen la DB — no volver a investigar desde cero, marcar `Bloqueado` y esperar que el dueño lo corra localmente.
+- Criterio "hecho cuando" verificado: migración aplicada + seed pobló la DB.
+- Commit: (este mismo commit, `feat(day-04): ...`)
+- Tests: no aplica (igual que la nota original de la corrida bloqueada).
+- Notas para la próxima corrida (Día 5, auth backend): la DB ya tiene el tenant/usuario semilla. El `passwordHash` sembrado NO es un hash bcrypt real — el Día 5 debe decidir si actualiza el seed para hashear un password de prueba conocido (recomendado, para poder probar `/api/login` de punta a punta) en vez de dejar el placeholder.
+
+### Día 4 (bloqueado por la corrida automática) — 2026-08-21 — Postgres schema v1
 
 - Preparado (sin verificar contra DB real): `prisma` + `@prisma/client` agregados al workspace `backend`. Nota de versión: la última estable (`7.9.1`, instalada primero) rompe con este schema porque Prisma 7 eliminó `datasource.url` del schema file a favor de `prisma.config.ts` + un `adapter` explícito en el `PrismaClient` — un cambio de API considerablemente más grande que el alcance de este día. Se optó por fijar `prisma`/`@prisma/client` en `6.19.3` (última estable de la serie 6, que sigue soportando `datasource { url = env("DATABASE_URL") }` clásico), en vez de adoptar el patrón de adapters de Prisma 7 sin poder siquiera probarlo contra una DB real. Revisar si vale la pena migrar a Prisma 7 más adelante, cuando haya acceso de red para probarlo de punta a punta.
 - `backend/prisma/schema.prisma` escrito con los 9 modelos del alcance del día (`Tenant`, `User`, `Plan`, `Subscription`, `CatalogItem`, `Order`, `Message`, `WhatsappSession`, `Reservation`, `MetricsEvent`), enums para status/roles, y `tenantId` indexado en cada modelo tenant-scoped (preparando el middleware de tenant-scoping del Día 5). `npx prisma generate` corre limpio (no necesita conexión a la DB, solo valida el schema).
