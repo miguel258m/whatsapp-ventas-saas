@@ -18,8 +18,8 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 
 ## Estado actual
 
-- Último día completado: 1
-- Próximo día a correr: 2
+- Último día completado: 2
+- Próximo día a correr: 3
 - Bloqueado: no
 - Razón de bloqueo: —
 - Esperando aprobación humana: no
@@ -30,6 +30,13 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 - **Fly.io**: la app `whatsapp-ventas-saas` ya existe (org `personal`, cuenta berdugo1232@gmail.com), creada el 2026-08-21 antes de llegar al Día 22, para que ese día no se bloquee por falta de cuenta. Todavía NO tiene volumen ni secrets configurados — eso lo hace el propio Día 22 cuando arme el Dockerfile y decida la región/tamaño.
 
 ## Log
+
+### Día 2 — 2026-08-21 — Sistema de diseño + landing pública
+
+- Implementado: Tailwind CSS agregado al workspace `frontend` (tailwind/postcss/autoprefixer), `tailwind.config.js` con paleta `brand` (verde, para CTAs/acentos) y `ink` (neutros para texto/fondos) y familia tipográfica `sans` (Inter con fallback). Componentes base en `frontend/src/components/ui/`: `Button` (variantes primary/secondary/outline/ghost, tamaños sm/md/lg, soporta `as="a"`), `Card`, `Input` (con label/error), `Badge` (variantes brand/neutral/outline). Landing pública en `frontend/src/pages/Landing.jsx` montada en `App.jsx`: header con nav a `/login`/`/signup`, hero con propuesta de valor y CTA, sección de 3 planes de precio ($95/$150/$250 por mes, plan Pro destacado) con botones de registro, sección de CTA final, footer. `main.jsx` importa `index.css` (directivas Tailwind + estilos base).
+- Commit: f2a6b85
+- Tests: no hay suite de tests todavía (arranca en el Día 7). Verificado manualmente: `npm run build --workspace=frontend` compila sin errores, el CSS generado (~11.4 kB) contiene utilidades Tailwind reales (no vacío), y el bundle JS contiene el texto de la propuesta de valor, los 3 planes y los CTAs ("Crear cuenta gratis", sección `#planes`). No se pudo hacer una verificación visual con navegador headless (Playwright no está instalado como dependencia del proyecto y no se agregó solo para este smoke test) — queda pendiente una revisión visual humana rápida si se quiere confirmar el layout responsive antes del Día 3.
+- Notas para la próxima corrida: rutas `/login` y `/signup` en el nav de la landing todavía no existen como páginas reales (llegan en el Día 3); por ahora son solo `<a href>` normales sin router — el Día 3 debe decidir si agrega `react-router-dom` o sigue con navegación simple. `npm audit` en frontend reporta 2 vulnerabilidades (1 moderate, 1 high), ambas en `vite`/`esbuild` (afectan solo al dev server, no al build de producción) — ya existían antes de este día, no vienen de Tailwind/PostCSS. El fix requiere saltar a Vite 8 (cambio breaking); no se hace ahora porque el gate de auditoría de seguridad es explícitamente antes del Día 22 — se deja como nota para revisar entonces.
 
 ### Día 1 — 2026-08-20 — Repo scaffolding
 
