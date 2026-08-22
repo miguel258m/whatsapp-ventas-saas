@@ -33,6 +33,14 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 
 ### Recordatorio: bloqueo del Día 7 sigue vigente — 2026-08-22 (corrida automática, sin avance, ritmo acelerado)
 
+- Nota de mantenimiento antes de empezar: el checkout llegó con HEAD detached en `24ba1d1` (mismo commit que `origin/main`), con el branch local `main` 12 commits atrás (`c1e3ba3`). Se hizo `git checkout main && git merge --ff-only 24ba1d1` — fast-forward limpio, sin commit nuevo generado por este paso.
+- Verificación rápida del bloqueador (no investigación completa): `find / -iname "*LimaCriolla*"`, `find / -iname "catalogo.json"`, `find / -iname "bot.js"`, `find / -iname "empresa-restaurante.md"` (todos excluyendo `node_modules`), más un `grep` en el repo por `LimaCriolla`/`catalogo.json`. Resultado: sigue sin existir el código fuente legado ni el catálogo real en ningún lugar accesible desde esta corrida. Sin cambios respecto a la corrida anterior.
+- No se implementó nada de código. "Último día completado" y "Próximo día a correr" no cambian.
+- Commit: este mismo commit (solo esta nota de log).
+- Notas para la próxima corrida: sigue pendiente que el dueño suba `Instalador-LimaCriolla/bot.js` + `catalogo.json` + `empresa-restaurante.md` a este repo (o indique dónde ya están accesibles). Hasta entonces, repetir solo la verificación rápida y detenerse.
+
+### Recordatorio: bloqueo del Día 7 sigue vigente — 2026-08-22 (corrida automática, sin avance, ritmo acelerado) [entrada previa]
+
 - Nota de mantenimiento antes de empezar: el checkout llegó con HEAD detached en `7fe2c10` (mismo commit que `origin/main`), con el branch local `main` 11 commits atrás (`c1e3ba3`). Se hizo `git checkout main && git merge --ff-only 7fe2c10` — fast-forward limpio, sin commit nuevo generado por este paso.
 - Verificación rápida del bloqueador (no investigación completa, según la nota dejada en la entrada anterior): `find / -iname "*LimaCriolla*"`, `find / -iname "catalogo.json"`, `find / -iname "bot.js"`, `find / -iname "empresa-restaurante.md"` (todos excluyendo `node_modules`) y `git log --all --oneline` / `git branch -a` / `git ls-remote origin`. Resultado: sigue sin existir el código fuente legado ni el catálogo real en ningún lugar accesible desde esta corrida. Sin cambios respecto a la corrida anterior.
 - No se implementó nada de código. "Último día completado" y "Próximo día a correr" no cambian.
