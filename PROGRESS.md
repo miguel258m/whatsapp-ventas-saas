@@ -31,6 +31,13 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 
 ## Log
 
+### Recordatorio: bloqueo del Día 5 sigue vigente — 2026-08-22 (corrida automática, sin avance)
+
+- Esta corrida verificó de nuevo si el bloqueo de red hacia Neon ya se resolvió, antes de tocar cualquier código. Resultado: **sigue bloqueado**. `curl` directo (vía el proxy HTTPS de salida) hacia `ep-summer-scene-ax8kajnz.c-4.us-east-2.aws.neon.tech:443` devuelve `403 Forbidden` explícito del gateway al hacer `CONNECT` — la misma denegación de política de red diagnosticada en los Días 4 y 5 y reconfirmada el 2026-08-21, sin cambios. No se investigó más ni se intentó ningún workaround.
+- Nota de mantenimiento (sin relación al bloqueo): el checkout llegó con HEAD detached apuntando a `cc41ee6` (el mismo commit que `origin/main`), mientras que el branch local `main` seguía 6 commits atrás (`c1e3ba3`). Se hizo `git checkout main && git merge --ff-only cc41ee6` para que `main` local coincida con `origin/main` antes de verificar el bloqueo — no se generó ningún commit nuevo con esto, `origin/main` ya tenía todo pusheado.
+- No se implementó nada del roadmap en esta corrida — el Día 5 sigue incompleto, esperando el mismo paso manual descrito en la entrada de abajo (correr `npm run seed` contra Neon desde una máquina con acceso normal a internet). "Último día completado" y "Próximo día a correr" no cambian.
+- Commit: este mismo commit (solo esta nota de log, sin cambios de código).
+
 ### Recordatorio: bloqueo del Día 5 sigue vigente — 2026-08-21 (corrida automática, sin avance)
 
 - Esta corrida verificó si el bloqueo de red hacia Neon (diagnosticado en el Día 4 y reconfirmado en el Día 5) ya se resolvió, antes de tocar cualquier código. Resultado: **sigue bloqueado**. `curl` directo desde este entorno hacia `ep-summer-scene-ax8kajnz.c-4.us-east-2.aws.neon.tech` en el puerto 5432 (Postgres) devuelve `Connection reset by peer` durante el TLS handshake (el túnel `CONNECT` del proxy sí se establece con `200`, pero la conexión se corta después), y hacia el mismo host en el puerto 443 devuelve `403 Forbidden` explícito del gateway de salida al hacer `CONNECT` (`recentRelayFailures` en `/__agentproxy/status` lo confirma: `"kind": "connect_rejected", "detail": "gateway answered 403 to CONNECT (policy denial or upstream failure)"`). Es la misma denegación de política de red ya diagnosticada en los Días 4 y 5, no un problema nuevo — no se investigó más ni se intentó ningún workaround, siguiendo la convención documentada en `ROADMAP.md`.
