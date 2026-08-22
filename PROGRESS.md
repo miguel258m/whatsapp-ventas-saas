@@ -18,10 +18,10 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 
 ## Estado actual
 
-- Último día completado: 4
-- Próximo día a correr: 5
-- Bloqueado: sí
-- Razón de bloqueo: código del Día 5 (auth backend) implementado y verificado contra un Postgres local equivalente, pero el criterio "hecho cuando" exige que el usuario dueño sembrado pueda loguearse contra la DB de Neon compartida real, y esta sigue inalcanzable desde el sandbox (mismo bloqueo de política de red del Día 4, confirmado de nuevo: `403` explícito al intentar contactar el host). El seed de Neon todavía tiene el `passwordHash` placeholder del Día 4 (`PENDIENTE_DIA_5_BCRYPT`), no el hash bcrypt real que ya escribe el script de seed actualizado. Falta un solo paso manual: correr `cd backend && npm run seed` desde una máquina con acceso normal a internet (usa el `DATABASE_URL` de Neon ya escrito en `backend/.env`, gitignored) para que el owner sembrado pueda loguearse con el password de prueba `cambiar-en-produccion` vía `POST /api/login` contra la DB real. Una vez corrido ese seed, el Día 5 puede marcarse completado (avanzar contador + marcar checkbox) sin tocar más código.
+- Último día completado: 5
+- Próximo día a correr: 6
+- Bloqueado: no
+- Razón de bloqueo: —
 - Esperando aprobación humana: no
 
 ## Infraestructura ya provisionada (fuera del flujo día a día)
@@ -30,6 +30,14 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 - **Fly.io**: la app `whatsapp-ventas-saas` ya existe (org `personal`, cuenta berdugo1232@gmail.com), creada el 2026-08-21 antes de llegar al Día 22, para que ese día no se bloquee por falta de cuenta. Todavía NO tiene volumen ni secrets configurados — eso lo hace el propio Día 22 cuando arme el Dockerfile y decida la región/tamaño.
 
 ## Log
+
+### Día 5 (completado manualmente) — 2026-08-22 — Auth backend
+
+- Las corridas automáticas dejaron el código del Día 5 (bcrypt, JWT, `/api/login`, `/api/me`, middleware de rol/tenant-scoping) completamente implementado y verificado contra un Postgres local propio, pero bloqueado porque no podían reseedear la Neon dev DB con un hash bcrypt real (ver entradas de abajo). El dueño del proyecto corrió `cd backend && npm install && npx prisma generate && npm run seed` desde su máquina (con acceso normal a internet) para reseedear Neon con el hash real.
+- Verificación end-to-end contra la DB real: `POST /api/login` con el password de prueba `cambiar-en-produccion` devuelve un JWT válido; `GET /api/me` con ese token devuelve el usuario `owner_admin` sembrado; login con password incorrecto devuelve `401`.
+- Criterio "hecho cuando" verificado en la DB real, no solo en el sustituto local.
+- Commit: (este mismo commit, `feat(day-05): ...`)
+- Notas para la próxima corrida (Día 6): conectar `/login` y `/signup` del frontend (Día 3, todavía mock) al backend real recién verificado. El password de prueba sembrado es `cambiar-en-produccion` para `dueno@whatsapp-ventas-saas.test` — útil para probar el flujo de login real en el navegador.
 
 ### Recordatorio: bloqueo del Día 5 sigue vigente — 2026-08-22 (corrida automática, sin avance)
 
