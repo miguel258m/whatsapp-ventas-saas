@@ -20,8 +20,8 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 
 - Último día completado: 6
 - Próximo día a correr: 7
-- Bloqueado: no
-- Razón de bloqueo: —
+- Bloqueado: sí
+- Razón de bloqueo: el Día 7 requiere portar código real (`calcularTotalCarrito`, `formatearCarrito`, `matchPlato`, `normalizar`, `formatearResumenConTotal`, `calcularEstadoPedido`) desde `Instalador-LimaCriolla/bot.js` y probarlo contra el `catalogo.json` real de Lima Criolla — ninguno de los dos existe en este repo, en su historial de git, ni en ningún otro lugar del filesystem de esta corrida. No es un secreto ni una decisión de alcance: es el código fuente legado que solo tiene el dueño del proyecto en su máquina/instalación existente. Sin él no hay nada real que portar ni un fixture real contra el cual verificar el criterio "hecho cuando" (los tests deben pasar contra datos reales, no inventados). Necesito que el dueño suba `Instalador-LimaCriolla/` (o al menos `bot.js` + `catalogo.json` + `empresa-restaurante.md`) a este repo (o me diga dónde ya están) antes de poder avanzar el Día 7.
 - Esperando aprobación humana: no
 
 ## Infraestructura ya provisionada (fuera del flujo día a día)
@@ -30,6 +30,15 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 - **Fly.io**: la app `whatsapp-ventas-saas` ya existe (org `personal`, cuenta berdugo1232@gmail.com), creada el 2026-08-21 antes de llegar al Día 22, para que ese día no se bloquee por falta de cuenta. Todavía NO tiene volumen ni secrets configurados — eso lo hace el propio Día 22 cuando arme el Dockerfile y decida la región/tamaño.
 
 ## Log
+
+### Día 7 (bloqueado por la corrida automática) — 2026-08-22 — Extraer helpers puros del motor
+
+- Nota de mantenimiento antes de empezar: el checkout llegó con HEAD detached en `f011286` (commit del Día 6), 9 commits adelante del branch local `main` y de `origin/main` (que seguían en `c1e3ba3`, previo al Día 2). A diferencia de corridas anteriores donde `origin/main` ya tenía todo pusheado y solo faltaba mover el branch local, esta vez `origin/main` **no** tenía los commits de los Días 2-6 — parece que la corrida del Día 6 olvidó el `git push` final. Se hizo `git checkout main && git merge --ff-only f011286 && git push -u origin main`, verificado con `git fetch` que `origin/main` quedó en `f011286`. Ningún commit nuevo generado por este paso, solo se sincronizó lo que ya estaba hecho.
+- Bloqueador real (ver "Razón de bloqueo" arriba): el alcance del Día 7 es explícitamente portar (no reescribir desde cero) helpers puros desde `Instalador-LimaCriolla/bot.js`, y probarlos con el `catalogo.json` real de Lima Criolla como fixture. Se buscó en todo el repo (`grep` por `LimaCriolla`/`catalogo.json`/nombres de las funciones), en todo el historial de git (`git log --all`), en todas las ramas/tags remotas (`git ls-remote`), y en el filesystem completo de este sandbox (`find / -iname`) — no existe ni el archivo `bot.js` legado ni `catalogo.json` en ningún lado accesible desde esta corrida.
+- No se implementó nada de código: escribir versiones "equivalentes" de `calcularTotalCarrito`/`matchPlato`/etc. sin el código fuente real ni el catálogo real violaría directamente el alcance del día ("portar", no "reinventar") y el criterio "hecho cuando" (los tests deben pasar contra datos reales, verificables a mano) — no se puede verificar contra datos que no existen. Se prefiere bloquear en vez de fabricar un fixture o una implementación adivinada que luego habría que descartar.
+- Tests: no aplica, no se tocó código.
+- Commit: este mismo commit (`chore(day-07): ...`, no `feat(day-07)` porque el día no está completo — no se marcó el ítem en `ROADMAP.md` ni se avanzaron "Último día completado"/"Próximo día a correr").
+- Notas para la próxima corrida (y para el dueño): subir `Instalador-LimaCriolla/bot.js`, `catalogo.json` y `empresa-restaurante.md` (o la carpeta completa) a este repo — por ejemplo en una carpeta `legacy/Instalador-LimaCriolla/` en la raíz — o indicar dónde ya están accesibles. Una vez estén, el Día 7 puede correr normalmente: extraer los helpers puros a `backend/src/engine/`, parametrizarlos por catálogo de tenant, y escribir tests unitarios contra el fixture real. Antes de tocar cualquier código, revisar si este bloqueo ya se resolvió (regla del paso 3 de "Cómo debe operar cada corrida diaria").
 
 ### Día 6 — 2026-08-22 — Conectar Login/Signup reales al backend
 
