@@ -31,6 +31,14 @@ Estado vivo que cada corrida diaria automática lee y actualiza. Ver [ROADMAP.md
 
 ## Log
 
+### Recordatorio: bloqueo del Día 7 sigue vigente — 2026-08-22 (corrida automática, sin avance)
+
+- Nota de mantenimiento antes de empezar: el checkout llegó con HEAD detached en `37348b8` (commit del Día 7 bloqueado), con el branch local `main` 10 commits atrás (`c1e3ba3`). A diferencia de la vez anterior, `origin/main` ya estaba en `37348b8` (la corrida anterior sí había pusheado) — solo hizo falta `git checkout main && git merge --ff-only 37348b8` para que el branch local alcance a `origin/main`; el `git push` posterior confirmó "Everything up-to-date", sin commit nuevo generado por este paso.
+- Se revisó de nuevo si el bloqueador real ya se resolvió, antes de tocar cualquier código: se buscó en todo el filesystem de este sandbox (`find / -iname "*LimaCriolla*"`, `find / -iname "catalogo.json"`, `find / -iname "bot.js"` excluyendo `node_modules`) y en todo el historial/branches/refs de git (`git log --all --oneline`, `git branch -a`, `git ls-remote`). Resultado: **sigue sin existir** `Instalador-LimaCriolla/bot.js`, `catalogo.json` ni `empresa-restaurante.md` en ningún lugar accesible desde esta corrida.
+- No se implementó nada de código — mismo motivo que la entrada anterior: portar (no reinventar) los helpers puros y verificarlos contra el catálogo real no es posible sin el código fuente legado ni el fixture real. "Último día completado" y "Próximo día a correr" no cambian.
+- Commit: este mismo commit (solo esta nota de log, sin cambios de código).
+- Notas para la próxima corrida (y para el dueño): sigue pendiente subir `Instalador-LimaCriolla/bot.js` + `catalogo.json` + `empresa-restaurante.md` (o la carpeta completa) a este repo, o indicar dónde ya están accesibles desde una corrida automática. Hasta entonces, cada corrida debe repetir solo esta verificación rápida (no una investigación completa) y detenerse sin avanzar el Día 7.
+
 ### Día 7 (bloqueado por la corrida automática) — 2026-08-22 — Extraer helpers puros del motor
 
 - Nota de mantenimiento antes de empezar: el checkout llegó con HEAD detached en `f011286` (commit del Día 6), 9 commits adelante del branch local `main` y de `origin/main` (que seguían en `c1e3ba3`, previo al Día 2). A diferencia de corridas anteriores donde `origin/main` ya tenía todo pusheado y solo faltaba mover el branch local, esta vez `origin/main` **no** tenía los commits de los Días 2-6 — parece que la corrida del Día 6 olvidó el `git push` final. Se hizo `git checkout main && git merge --ff-only f011286 && git push -u origin main`, verificado con `git fetch` que `origin/main` quedó en `f011286`. Ningún commit nuevo generado por este paso, solo se sincronizó lo que ya estaba hecho.
