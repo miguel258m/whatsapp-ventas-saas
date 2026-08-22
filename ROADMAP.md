@@ -40,7 +40,7 @@ Usamos `whatsapp-web.js` (conexión no oficial), así que el riesgo de que Whats
   Hecho cuando: `npx prisma migrate dev` funciona localmente, el seed puebla una DB local funcional.
 - [x] **Día 5 — Auth backend.** Hash de contraseñas (bcrypt), emisión de JWT, `/api/login`, `/api/me`, middleware de rol (`owner_admin`/`tenant_admin`/`tenant_staff`), middleware de tenant-scoping que inyecta `req.tenantId` desde el JWT.
   Hecho cuando: el usuario dueño sembrado puede loguearse vía `POST /api/login`, una ruta protegida rechaza peticiones sin token válido.
-- [ ] **Día 6 — Conectar Login/Signup reales al backend.** Reemplazar el mock del Día 3: `/login` llama a `/api/login` real y guarda el token; `/signup` crea un tenant `trial` + usuario `tenant_admin` real en la DB y notifica al dueño (berdugo1232@gmail.com).
+- [x] **Día 6 — Conectar Login/Signup reales al backend.** Reemplazar el mock del Día 3: `/login` llama a `/api/login` real y guarda el token; `/signup` crea un tenant `trial` + usuario `tenant_admin` real en la DB y notifica al dueño (berdugo1232@gmail.com).
   Hecho cuando: loguearse con el usuario dueño sembrado en el navegador lleva a un dashboard vacío; enviar el formulario de signup crea una fila real en `tenants` con status `trial` (verificable por query directa a la DB — verlo en el dashboard del dueño llega en el Día 15).
 
 ## Fase B — Motor multi-tenant del bot

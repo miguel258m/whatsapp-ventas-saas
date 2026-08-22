@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button.jsx";
 import Card from "../components/ui/Card.jsx";
 import Input from "../components/ui/Input.jsx";
+import { login } from "../lib/api.js";
+import { saveSession } from "../lib/session.js";
 
 function validate({ email, password }) {
   const errors = {};
@@ -20,27 +22,35 @@ function validate({ email, password }) {
 }
 
 export default function Login() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
-  const [status, setStatus] = useState("idle"); // idle | loading | submitted
+  const [status, setStatus] = useState("idle"); // idle | loading | error
+  const [serverError, setServerError] = useState("");
 
   function handleChange(field) {
     return (event) => {
       setForm((prev) => ({ ...prev, [field]: event.target.value }));
       setStatus("idle");
+      setServerError("");
     };
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const nextErrors = validate(form);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     setStatus("loading");
-    setTimeout(() => {
-      setStatus("submitted");
-    }, 700);
+    try {
+      const { token, user } = await login(form);
+      saveSession({ token, user });
+      navigate("/dashboard");
+    } catch (err) {
+      setStatus("error");
+      setServerError(err.message || "No se pudo iniciar sesión.");
+    }
   }
 
   return (
@@ -81,10 +91,9 @@ export default function Login() {
               error={errors.password}
             />
 
-            {status === "submitted" && (
-              <p className="rounded-xl border border-brand-200 bg-brand-50 px-3.5 py-2.5 text-sm text-brand-700">
-                Datos válidos. La conexión real al backend llega en el Día 6
-                — por ahora esta pantalla es solo de diseño.
+            {status === "error" && (
+              <p className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
+                {serverError}
               </p>
             )}
 
